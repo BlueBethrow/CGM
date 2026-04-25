@@ -15,7 +15,64 @@ public:
     // enter code here that interprets the mouse's
     // x, y position as H ans S (I suggest to set
     // V to 1.0) and converts that tripple to RGB
-    return Vec3{h,s,1.0f};
+      
+	  float r, g, b = 0.0;
+      float v = 1.0;
+      if (s == 0) {
+          r = v;
+          g = v;
+          b = v;
+      } else {
+        float hue = h*360;
+        // Clipping
+        if (hue == 360.0) {
+            hue = 0.0;
+        } else {
+              // Splitt up in 60deg each (only for switch case ) 
+          hue = hue/60;
+        }
+        long hue_index = (long) trunc(hue);
+
+          float f = hue - hue_index;
+          float p = v * (1.0 - s);
+          float q = v * (1.0 - (s * f));
+          float t = v * (1.0 - (s * (1.0 - f)));
+
+          // Init Normalized r, g, b with 0 - 1.0 ;
+          switch (hue_index) {
+          case 0: // < 60 Hue
+              r = v;
+              g = t;
+              b = p;
+              break;
+          case 1: // < 120 Hue
+              r = q;
+              g = v;
+              b = p;
+              break;
+          case 2: // < 180 Hue
+              r = p;
+              g = v;
+              b = t;
+              break;
+          case 3: // < 240 Hue
+              r = p;
+              g = q;
+              b = v;
+              break;
+          case 4: // < 300 Hue
+              r = t;
+              g = p;
+              b = v;
+              break; // < 360/0 Hue
+          default:
+              r = v;
+              g = p;
+              b = q;
+              break;
+          }
+      }
+    return Vec3{r,g,b};
   }
   
   virtual void init() override {
