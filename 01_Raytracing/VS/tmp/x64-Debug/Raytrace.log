@@ -1,0 +1,4 @@
+﻿  Scene.cpp
+D:\Repo\CGM - Aufgabe\01_Raytracing\Scene.cpp(115,23): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Repo\CGM - Aufgabe\01_Raytracing\Scene.cpp(116,23): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  Raytrace.vcxproj -> D:\Repo\CGM - Aufgabe\01_Raytracing\VS\bin\x64-Debug\Raytracer.exe

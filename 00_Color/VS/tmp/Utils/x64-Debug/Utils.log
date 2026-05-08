@@ -1,0 +1,35 @@
+﻿  ArcBall.cpp
+  Base64Url.cpp
+  CommandInterpreter.cpp
+  Compression.cpp
+  Image.cpp
+  AbstractParticleSystem.cpp
+  bmp.cpp
+  FontRenderer.cpp
+  GLApp.cpp
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\shared\minwindef.h(130,9): warning C4005: 'APIENTRY': macro redefinition
+  (compiling source file '../GLApp.cpp')
+      D:\Repo\CGM - Aufgabe\VS\include\GLFW\glfw3.h(123,11):
+      see previous definition of 'APIENTRY'
+  
+  GLArray.cpp
+  GLBuffer.cpp
+  GLDebug.cpp
+  GLEnv.cpp
+  GLProgram.cpp
+  GLTexture1D.cpp
+  GLTexture2D.cpp
+  GLTexture3D.cpp
+  GLTextureCube.cpp
+  GLFramebuffer.cpp
+  GLDepthBuffer.cpp
+  Generating Code...
+  Compiling...
+  Grid2D.cpp
+  ImageLoader.cpp
+  OBJFile.cpp
+  png.cpp
+  Rand.cpp
+  Tesselation.cpp
+  Generating Code...
+  Utils.vcxproj -> D:\Repo\CGM - Aufgabe\00_Color\VS\bin\x64-Debug\Utils.lib

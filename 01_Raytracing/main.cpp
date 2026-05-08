@@ -13,7 +13,7 @@ public:
     
   virtual void init() {
     GL(glDisable(GL_CULL_FACE));
-    render(Scene::genSimpleScene(), 9);
+    render(Scene::genSimpleScene(), 2);
   }
 
   void render(Scene scene, int depth) {

@@ -1,0 +1,22 @@
+﻿  main.cpp
+D:\Repo\CGM - Aufgabe\00_Color\main.cpp(37,19): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Repo\CGM - Aufgabe\00_Color\main.cpp(38,19): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Repo\CGM - Aufgabe\00_Color\main.cpp(39,19): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\shared\minwindef.h(130,9): warning C4005: 'APIENTRY': macro redefinition
+  (compiling source file '../main.cpp')
+      D:\Repo\CGM - Aufgabe\VS\include\GLFW\glfw3.h(123,11):
+      see previous definition of 'APIENTRY'
+  
+utils.lib(glew.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'utils.lib(glew.obj)' or at 'D:\Repo\CGM - Aufgabe\00_Color\VS\bin\x64-Debug\vc120.pdb'; linking object as if no debug info
+     Creating library D:\Repo\CGM - Aufgabe\00_Color\VS\bin\x64-Debug\Color.lib and object D:\Repo\CGM - Aufgabe\00_Color\VS\bin\x64-Debug\Color.exp
+LINK : warning LNK4098: defaultlib 'LIBCMT' conflicts with use of other libs; use /NODEFAULTLIB:library
+LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
+  Color.vcxproj -> D:\Repo\CGM - Aufgabe\00_Color\VS\bin\x64-Debug\Color.exe
+  D:\Repo\CGM - Aufgabe\00_Color\VS\..\..\Utils\helvetica_neue.bmp
+  1 Datei(en) kopiert
+  D:\Repo\CGM - Aufgabe\00_Color\VS\..\..\Utils\helvetica_neue.pos
+  1 Datei(en) kopiert
+  D:\Repo\CGM - Aufgabe\00_Color\VS\..\..\Utils\helvetica_neue.bmp
+  1 Datei(en) kopiert
+  D:\Repo\CGM - Aufgabe\00_Color\VS\..\..\Utils\helvetica_neue.pos
+  1 Datei(en) kopiert
