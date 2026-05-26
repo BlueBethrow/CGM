@@ -36,11 +36,50 @@ Solution
 Assignment
 LatexUtils
 
-# macOS Files
-.DS_Store
 .vs/
 *.ipch
 
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Xcode user-specific files
 *.xcuserstate
-*xcuserdata
-*.xcworkspace/xcuserdata/
+*.xcuserdata/
+xcuserdata/
+
+# Xcode build output
+build/
+DerivedData/
+
+# Swift Package Manager
+.build/
+.swiftpm/
+Package.resolved
+
+# CocoaPods
+Pods/
+
+# Carthage
+Carthage/Build/
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output/
+
+# Xcode archives / debug symbols
+*.xcarchive
+*.dSYM
+*.dSYM.zip
+
+# Playgrounds
+timeline.xctimeline
+playground.xcworkspace
+
+# Local config / secrets
+*.local
+*.env
+*.env.*

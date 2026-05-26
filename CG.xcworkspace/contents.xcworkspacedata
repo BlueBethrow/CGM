@@ -17,6 +17,15 @@
       location = "group:04_Triforce/04 Triforce.xcodeproj">
    </FileRef>
    <FileRef
+      location = "group:05_Volumes/05 Volren.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:06_VolumeShadows/06 VolumeShadows.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:07_VolumeGeneration/07 VolumeGeneration.xcodeproj">
+   </FileRef>
+<FileRef
       location = "group:Utils/Utils.xcodeproj">
    </FileRef>
 </Workspace>
