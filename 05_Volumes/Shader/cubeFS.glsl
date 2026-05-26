@@ -40,7 +40,7 @@ vec4 tracePrimaryRay(vec3 rayStart, vec3 rayDirection) {
   float sampleEstimate = dot(abs(rayDirection * rayLength), voxelCount);
   int sampleCount = max(1, int(ceil(sampleEstimate * oversampling)));
   float stepLength = rayLength / float(sampleCount);
-  float opacityCorrection = 100.0 / float(sampleCount);
+  float opacityCorrection = 100.0 * stepLength;
   vec3 delta = rayDirection * stepLength;
 
   vec3 currentPoint = rayStart;
