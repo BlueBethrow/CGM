@@ -5,13 +5,13 @@
       location = "group:00_Color/00 Color.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:01_Raytracing/01 Raytracer.xcodeproj">
+      location = "group:01_Raytracing/01 Raytracing.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:02_Texturing/02 Texturing.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:03_HelloGL/03 HelloGL.xcodeproj">
+      location = "group:03_Pathtracing/03 Pathtracing.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:04_Triforce/04 Triforce.xcodeproj">
