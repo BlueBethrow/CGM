@@ -1,52 +1,38 @@
 #include "Material.h"
 
-Vec3 Material::getAmbient() const
-{
-    return ambient;
-}
-
-Vec3 Material::getDiffuse() const
-{
+Vec3 Material::getDiffuse() const {
     return diffuse;
 }
 
-Vec3 Material::getSpecular() const
-{
+Vec3 Material::getSpecular() const {
     return specular;
 }
 
-float Material::getExp() const
-{
-    return exponent;
-}
-
-bool Material::isShadowCaster() const
-{
-    return m_isShadowCaster;
-}
-
-bool Material::reflects() const
-{
+bool Material::reflects() const {
     return local < 1.0;
 }
 
-bool Material::refracts() const
-{
+bool Material::refracts() const {
     return reflects() && IOR;
 }
 
-bool Material::hasTexture() const
-{
+bool Material::hasTexture() const {
     return texture.has_value();
 }
 
-std::optional<float> Material::getIndexOfRefraction() const
-{
+bool Material::emits() const {
+    return emission.sqlength() > 0.0f;
+}
+
+Vec3 Material::getEmission() const {
+    return emission;
+}
+
+std::optional<float> Material::getIndexOfRefraction() const {
     return IOR;
 }
 
-float Material::getReflectivity(float cosI) const
-{
+float Material::getReflectivity(float cosI) const {
   const float sign = (cosI < 0) ? -1.0f : 1.0f;
 
   float R0;
@@ -61,7 +47,6 @@ float Material::getReflectivity(float cosI) const
   return R0 + (1.0f - R0) * pow(1.0f - sign * cosI, 5.0f);
 }
 
-std::optional<Texture> Material::getTexture() const
-{
+std::optional<Texture> Material::getTexture() const {
     return texture;
 }

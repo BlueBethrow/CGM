@@ -5,8 +5,10 @@
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
+#include <optional>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "Scene.h"
@@ -18,14 +20,15 @@ public:
 	static constexpr uint32_t renderWidth = 600;
 	static constexpr uint32_t renderHeight = 600;
 	static constexpr uint32_t pathsPerFrame = 1;
-	static constexpr uint32_t maxPathsPerPixel = 500;
 
 	Image image{renderWidth, renderHeight};
 	Scene scene;
 	Camera camera;
-	Pathtracer renderer{8, pathsPerFrame, maxPathsPerPixel};
+	std::optional<Pathtracer> renderer;
 	FontRenderer fontRenderer{"helvetica_neue.bmp", "helvetica_neue.pos"};
 	std::shared_ptr<FontEngine> fontEngine{nullptr};
+	std::vector<std::pair<Scene, uint32_t>> scenes;
+	size_t activeSceneIndex{0};
 	std::vector<float> previewData;
 	Vec3 previewCenter;
 	ArcBall arcBall{Vec2ui{renderWidth, renderHeight}};
@@ -35,6 +38,7 @@ public:
 
 	MyGLApp() : GLApp{renderWidth, renderHeight, 1, "Pathtracing"} {}
 
+
 	virtual void init() override {
 		GL(glDisable(GL_CULL_FACE));
 		GL(glEnable(GL_DEPTH_TEST));
@@ -43,12 +47,11 @@ public:
 		camera.setEyePoint(Vec3{0.0f, 0.0f, 2.0f});
 		camera.setLookAt(Vec3{0.0f, 0.0f, 0.0f});
 
-		scene = Scene::genPathTracingScene();
-		const Vec3 backgroundColor = scene.getBackgroundcolor();
-		setBackground(backgroundColor.r, backgroundColor.g, backgroundColor.b, 1.0f);
-		previewData = scene.getTriangleData();
-		previewCenter = computePreviewCenter(previewData);
-		restartPathTracing();
+		scenes.emplace_back(Scene::genPathTracingScene(), 200);
+		scenes.emplace_back(Scene::genCornellBox(), 5000);
+		renderer.emplace(8, pathsPerFrame, scenes[activeSceneIndex].second);
+
+    initPathTracing();
 	}
 
 	virtual void resize(const Dimensions winDim, const Dimensions fbDim) override
@@ -71,11 +74,27 @@ public:
 		return vertexCount == 0 ? Vec3{} : center / float(vertexCount);
 	}
 
+  void initPathTracing() {
+		const std::pair<Scene, uint32_t>& activeScene = scenes[activeSceneIndex];
+    scene = activeScene.first;
+		renderer->setMaxSampleCount(activeScene.second);
+    const Vec3 backgroundColor = scene.getBackgroundcolor();
+    setBackground(backgroundColor.r, backgroundColor.g, backgroundColor.b, 1.0f);
+    previewData = scene.getTriangleData();
+    previewCenter = computePreviewCenter(previewData);
+    restartPathTracing();
+  }
+
+	void nextScene() {
+		activeSceneIndex = (activeSceneIndex + 1) % scenes.size();
+		initPathTracing();
+	}
+
 	void restartPathTracing()
 	{
-		renderer.setScene(scene);
-		renderer.setCamera(camera);
-		renderer.reset();
+		renderer->setScene(scene);
+		renderer->setCamera(camera);
+		renderer->reset();
 		showPreview = false;
 	}
 
@@ -89,11 +108,11 @@ public:
 
 	void drawSampleText()
 	{
-		if (!fontEngine || renderer.isFinished())
+		if (!fontEngine || renderer->isFinished())
 			return;
 
-		const uint32_t sampleCount = renderer.getSampleCount();
-		const uint32_t maxSampleCount = renderer.getMaxSampleCount();
+		const uint32_t sampleCount = renderer->getSampleCount();
+		const uint32_t maxSampleCount = renderer->getMaxSampleCount();
 
 		glDisable(GL_DEPTH_TEST);
 		std::stringstream text;
@@ -113,8 +132,8 @@ public:
 			return;
 		}
 
-		if (!renderer.isFinished())
-			renderer.render(image);
+		if (!renderer->isFinished())
+			renderer->render(image);
 
 		setDrawProjection(Mat4{});
 		setDrawTransform(Mat4{});
@@ -152,8 +171,13 @@ public:
 	}
 
 	void keyboard(int key, int scancode, int action, int mods) override {
-		if (key == GLENV_KEY_SPACE && action == GLENV_PRESS)
-			restartPathTracing();
+    if (action == GLENV_PRESS) {
+      switch (key) {
+        case GLENV_KEY_S:
+          nextScene();
+          break;
+      }
+    }
 	}
 
 } myApp;

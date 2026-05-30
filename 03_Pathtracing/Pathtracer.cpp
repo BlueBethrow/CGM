@@ -4,6 +4,19 @@
 #include <algorithm>
 #include <cmath>
 
+namespace {
+
+float linearToSRGB(float value) {
+	const float clamped = std::clamp(value, 0.0f, 1.0f);
+	return std::pow(clamped, 1.0f / 2.2f);
+}
+
+Vec3 linearToSRGB(const Vec3& color) {
+	return Vec3{linearToSRGB(color.r), linearToSRGB(color.g), linearToSRGB(color.b)};
+}
+
+} // namespace
+
 void Pathtracer::setCamera(const Camera& camera)
 {
 	this->camera = camera;
@@ -32,6 +45,11 @@ uint32_t Pathtracer::getMaxSampleCount() const
 	return maxSamples;
 }
 
+void Pathtracer::setMaxSampleCount(uint32_t maxSamples)
+{
+	this->maxSamples = maxSamples;
+}
+
 bool Pathtracer::isFinished() const
 {
 	return accumulatedSamples >= maxSamples;
@@ -49,7 +67,7 @@ void Pathtracer::render(Image& img)
 		accumulatedSamples = 0;
 	}
 
-	[[maybe_unused]] const RaySetup rs = computeRaySetup(img);
+	const RaySetup rs = computeRaySetup(img);
 	const uint32_t samplesThisPass = std::min(samplesPerRender, maxSamples - accumulatedSamples);
 
 	for (uint32_t y = 0; y < img.height; ++y)
@@ -67,11 +85,12 @@ void Pathtracer::render(Image& img)
 
 			const size_t index = size_t(y) * size_t(img.width) + size_t(x);
 			accumulation[index] = accumulation[index] + color;
-			const Vec3 average = Vec3::clamp(accumulation[index] / float(accumulatedSamples + samplesThisPass), 0.0f, 1.0f);
+			const Vec3 average = accumulation[index] / float(accumulatedSamples + samplesThisPass);
+			const Vec3 displayColor = linearToSRGB(average);
 
-			img.setNormalizedValue(x, y, 0, average.r);
-			img.setNormalizedValue(x, y, 1, average.g);
-			img.setNormalizedValue(x, y, 2, average.b);
+			img.setNormalizedValue(x, y, 0, displayColor.r);
+			img.setNormalizedValue(x, y, 1, displayColor.g);
+			img.setNormalizedValue(x, y, 2, displayColor.b);
 			img.setValue(x, y, 3, 255);
 		}
 	}

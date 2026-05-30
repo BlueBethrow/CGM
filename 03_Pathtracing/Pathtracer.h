@@ -39,6 +39,7 @@ public:
 	void render(Image& img);
 	uint32_t getSampleCount() const;
 	uint32_t getMaxSampleCount() const;
+	void setMaxSampleCount(uint32_t maxSamples);
 	bool isFinished() const;
 
 private:

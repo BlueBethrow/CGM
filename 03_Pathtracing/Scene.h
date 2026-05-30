@@ -8,7 +8,6 @@
 
 class Scene
 {
-	static constexpr float OFFSET_EPSILON = 0.00001f;
 	std::vector<std::shared_ptr<const IntersectableObject>> sceneObjects;
 	Vec3 backgroundColor;
 	Mat4 model;
@@ -33,5 +32,6 @@ public:
 	Vec3 tracePath(const Ray& ray, int maxDepth) const;
 
 	static Scene genPathTracingScene();
+	static Scene genCornellBox();
 
 };

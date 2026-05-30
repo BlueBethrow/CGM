@@ -51,15 +51,15 @@ Vec3 transformDirection(const Mat4& matrix, const Vec3& direction) {
 [[maybe_unused]] Vec3 environmentColor(const Vec3& direction)
 {
 	const Vec3 dir = Vec3::normalize(direction);
-	const Vec3 horizon{0.45f, 0.48f, 0.55f};
-	const Vec3 zenith{1.15f, 1.25f, 1.55f};
-	const Vec3 ground{0.32f, 0.31f, 0.28f};
+	const Vec3 horizon{0.32f, 0.36f, 0.43f};
+	const Vec3 zenith{0.78f, 0.90f, 1.12f};
+	const Vec3 ground{0.22f, 0.21f, 0.20f};
 
 	if (dir.y > 0.0f)
 	{
 		const float t = std::sqrt(std::clamp(dir.y, 0.0f, 1.0f));
 		const float zenithSpot = std::pow(std::clamp(dir.y, 0.0f, 1.0f), 40.0f);
-		return horizon * (1.0f - t) + zenith * t + Vec3{25.0f, 24.0f, 20.0f} * zenithSpot;
+		return horizon * (1.0f - t) + zenith * t + Vec3{10.0f, 9.5f, 8.0f} * zenithSpot;
 	}
 
 	const float t = std::clamp(-dir.y, 0.0f, 1.0f);
@@ -165,27 +165,34 @@ Vec3 Scene::traceLocalPath(const Ray& firstRay, int maxDepth) const {
 		//
 		//       return throughput * environmentColor(transformDirection(model, ray.getDirection()));
 		//
-		// 3. If the ray hits an object, compute the hit position, normal, material,
-		//    and the next ray direction.
+		// 3. If the ray hits an object, compute the hit position, normal, and
+		//    material. In this simplified renderer, a material either emits light
+		//    or scatters the path, but not both. If material.emits() is true, the
+		//    path has hit light-source geometry. Return
+		//    throughput * material.getEmission().
 		//
-		// 4. For refractive materials, reuse the refraction code from the texturing
+		// 4. Otherwise, the material scatters the path. Compute the next ray
+		//    direction.
+		//
+		// 5. For refractive materials, reuse the refraction code from the texturing
 		//    raytracer:
 		//      - compute the Fresnel reflectivity with material.getReflectivity(...)
 		//      - compute the refracted direction with Vec3::refract(...)
 		//      - use the Fresnel value as a probability to choose reflection or
 		//        refraction for this one path
 		//      - if refraction fails, use reflection
-		//      - multiply throughput by material.getSpecular() * getAlbedo(inter)
+		//      - multiply throughput by material.getSpecular()
 		//
-		// 5. For mirror materials, reuse Vec3::reflect(...) from the raytracer and
-		//    multiply throughput by material.getSpecular() * getAlbedo(inter).
+		// 6. For mirror materials, reuse Vec3::reflect(...) from the raytracer and
+		//    multiply throughput by material.getSpecular().
 		//
-		// 6. For diffuse materials, call sampleDiffuseDirection(...). Multiply the
+		// 7. For diffuse materials, call sampleDiffuseDirection(...). Multiply the
 		//    throughput by getAlbedo(inter). This replaces the old Phong light loop:
 		//    instead of evaluating all lights at this surface, the path randomly
-		//    continues and gathers light when it eventually reaches the environment.
+		//    continues and gathers light when it eventually reaches the environment
+		//    or an emissive object.
 		//
-		// 7. Normalize the next direction and continue the path with a new ray from
+		// 8. Normalize the next direction and continue the path with a new ray from
 		//    offsetRayOrigin(...), so the new ray does not immediately hit the same
 		//    surface again.
 	}
@@ -200,20 +207,43 @@ Scene Scene::genPathTracingScene() {
 	Texture checkerboard = Texture::genCheckerboardTexture(2, 2);
 	Texture earth("Earth.png");
 
-	Material glass(Vec3{}, Vec3{0.35f, 0.55f, 1.0f}, Vec3{0.65f, 0.78f, 1.0f}, 1.0f, 0.0f, 1.52f);
+	Material glass(Vec3{0.35f, 0.55f, 1.0f}, Vec3{0.65f, 0.78f, 1.0f}, 0.0f, 1.52f);
 	s.addObject(std::make_shared<Sphere>(Vec3{0.7f, -0.4f, -2.0f}, 0.9f, glass));
 
-	Material earthMaterial(Vec3{}, Vec3{1.0f, 1.0f, 1.0f}, Vec3{}, 1.0f, 1.0f, {}, earth);
+	Material earthMaterial(Vec3{1.0f, 1.0f, 1.0f}, Vec3{}, 1.0f, std::nullopt, earth);
 	s.addObject(std::make_shared<Sphere>(Vec3{-0.9f, -0.1f, -2.2f}, 0.6f, earthMaterial, Vec3{-90.0f, 0.0f, -90.0f}));
 
-	Material redDiffuse(Vec3{}, Vec3{0.95f, 0.08f, 0.04f}, Vec3{}, 1.0f, 1.0f, {});
+	Material redDiffuse(Vec3{0.95f, 0.08f, 0.04f});
 	s.addObject(std::make_shared<Sphere>(Vec3{2.15f, -0.95f, -3.35f}, 0.55f, redDiffuse));
 
-	Material mirror(Vec3{}, Vec3{1.0f, 0.9f, 0.1f}, Vec3{1.0f, 0.85f, 0.15f}, 1.0f, 0.0f, {});
+	Material mirror(Vec3{1.0f, 0.9f, 0.1f}, Vec3{1.0f, 0.85f, 0.15f}, 0.0f);
 	s.addObject(std::make_shared<Sphere>(Vec3{0.0f, 4.0f, -8.0f}, 3.9f, mirror, Vec3{-60.0f, 0.0f, -90.0f}));
 
-	Material floor(Vec3{}, Vec3{0.75f, 0.75f, 0.75f}, Vec3{}, 1.0f, 1.0f, {}, checkerboard);
+	Material floor(Vec3{0.75f, 0.75f, 0.75f}, Vec3{}, 1.0f, std::nullopt, checkerboard);
 	s.addObject(std::make_shared<Plane>(Vec3{0.0f, 1.0f, 0.0f}, 1.5f, floor));
 
 	return s;
+}
+
+Scene Scene::genCornellBox() {
+  Scene s{Vec3{0.5f, 0.5f, 0.5f}};
+
+  const Material whiteDiffuse{Vec3{1.0f, 1.0f, 1.0f}};
+  const Material redDiffuse{Vec3{0.75f, 0.08f, 0.04f}};
+  const Material blueDiffuse{Vec3{0.10f, 0.12f, 0.62f}};
+  const Material glass{Vec3{1.0f, 1.0f, 1.0f}, Vec3{1.0f, 1.0f, 1.0f}, 0.0f, 1.52f};
+  const Material mirror{Vec3{1.0f, 1.0f, 1.0f}, Vec3{1.0f, 1.0f, 1.0f}, 0.0f};
+  const Material light{Vec3{1.0f, 0.96f, 0.82f}, Vec3{}, 1.0f, std::nullopt, std::nullopt, Vec3{18.0f, 16.0f, 12.0f}};
+
+  s.addObject(std::make_shared<Plane>(Vec3{0.0f, 1.0f, 0.0f}, 1.25f, whiteDiffuse));
+  s.addObject(std::make_shared<Plane>(Vec3{0.0f, -1.0f, 0.0f}, 1.45f, whiteDiffuse));
+  s.addObject(std::make_shared<Plane>(Vec3{0.0f, 0.0f, 1.0f}, 4.2f, whiteDiffuse));
+  s.addObject(std::make_shared<Plane>(Vec3{1.0f, 0.0f, 0.0f}, 1.65f, redDiffuse));
+  s.addObject(std::make_shared<Plane>(Vec3{-1.0f, 0.0f, 0.0f}, 1.65f, blueDiffuse));
+
+  s.addObject(std::make_shared<Sphere>(Vec3{0.0f, 11.44f, -1.0f}, 10.0f, light));
+  s.addObject(std::make_shared<Sphere>(Vec3{-0.55f, -0.72f, -2.15f}, 0.48f, mirror));
+  s.addObject(std::make_shared<Sphere>(Vec3{0.55f, -0.78f, -1.7f}, 0.42f, glass));
+
+  return s;
 }

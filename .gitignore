@@ -36,6 +36,11 @@ Solution
 Assignment
 LatexUtils
 
+# Local exercise web exports / solution helpers
+*/html/
+snippet.js
+solution.css
+
 .vs/
 *.ipch
 
