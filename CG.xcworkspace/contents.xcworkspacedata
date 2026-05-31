@@ -25,7 +25,13 @@
    <FileRef
       location = "group:07_VolumeGeneration/07 VolumeGeneration.xcodeproj">
    </FileRef>
-<FileRef
+   <FileRef
+      location = "group:08_Radiosity/08 Radiosity.xcodeproj">
+   </FileRef>   
+   <FileRef
+      location = "group:09_PhotonMapping/09 PhotonMapping.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:Utils/Utils.xcodeproj">
    </FileRef>
 </Workspace>
