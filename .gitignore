@@ -6,6 +6,7 @@
 *.lo
 *.o
 *.obj
+!*/Datasets/*.obj
 
 # Precompiled Headers
 *.gch
@@ -38,6 +39,7 @@ LatexUtils
 
 # Local exercise web exports / solution helpers
 */html/
+*/web/
 snippet.js
 solution.css
 
