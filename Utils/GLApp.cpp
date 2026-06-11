@@ -3,6 +3,7 @@
 #include <chrono>
 #include <ctime>
 #include <iomanip>
+#include <optional>
 #include <sstream>
 #include <string>
 
@@ -17,141 +18,149 @@ GLApp::GLApp(uint32_t w, uint32_t h, uint32_t s,
              bool exactPixels,
              const std::vector<std::string>& args) :
 #ifdef __EMSCRIPTEN__
-glEnv{w,h,s,title,fpsCounter,sync,exactPixels,3,0,true,},
+  glEnv{w,h,s,title,fpsCounter,sync,exactPixels,3,0,true,},
 #else
-glEnv{w,h,s,title,fpsCounter,sync,exactPixels,4,1,true},
+  glEnv{w,h,s,title,fpsCounter,sync,exactPixels,4,1,true},
 #endif
-p{},
-mv{},
-simpleProg{GLProgram::createFromString(
-                                       "uniform mat4 MVP;\n"
-                                       "in vec3 vPos;\n"
-                                       "in vec4 vColor;\n"
-                                       "out vec4 color;\n"
-                                       "void main() {\n"
-                                       "    gl_Position = MVP * vec4(vPos, 1.0);\n"
-                                       "    color = vColor;\n"
-                                       "}\n",
-                                       "in vec4 color;\n"
-                                       "out vec4 FragColor;\n"
-                                       "void main() {\n"
-                                       "    FragColor = color;\n"
-                                       "}\n","",false,true)},
-simplePointProg{GLProgram::createFromString(
-                                            "uniform mat4 MVP;\n"
-                                            "#ifdef WEBGL\n"
-                                            "uniform float pointSize;\n"
-                                            "#endif\n"
-                                            "in vec3 vPos;\n"
-                                            "in vec4 vColor;\n"
-                                            "out vec4 color;\n"
-                                            "void main() {\n"
-                                            "    gl_Position = MVP * vec4(vPos, 1.0);\n"
-                                            "    #ifdef WEBGL\n"
-                                            "    gl_PointSize = pointSize;\n"
-                                            "    #endif\n"
-                                            "    color = vColor;\n"
-                                            "}\n",
-                                            "in vec4 color;\n"
-                                            "out vec4 FragColor;\n"
-                                            "void main() {\n"
-                                            "    FragColor = color;\n"
-                                            "}\n","",false,true)},
-simpleSpriteProg{GLProgram::createFromString(
-                                             "uniform mat4 MVP;\n"
-                                             "#ifdef WEBGL\n"
-                                             "uniform float pointSize;\n"
-                                             "#endif\n"
-                                             "in vec3 vPos;\n"
-                                             "in vec4 vColor;\n"
-                                             "out vec4 color;\n"
-                                             "void main() {\n"
-                                             "    gl_Position = MVP * vec4(vPos, 1.0);\n"
-                                             "    #ifdef WEBGL\n"
-                                             "    gl_PointSize = pointSize;\n"
-                                             "    #endif\n"
-                                             "    color = vColor;\n"
-                                             "}\n",
-                                             "uniform sampler2D pointSprite;\n"
-                                             "in vec4 color;\n"
-                                             "out vec4 FragColor;\n"
-                                             "void main() {\n"
-                                             "    FragColor = color*texture(pointSprite, gl_PointCoord);\n"
-                                             "}\n","",false,true)},
-simpleHLSpriteProg{GLProgram::createFromString(
-                                               "uniform mat4 MVP;\n"
-                                               "#ifdef WEBGL\n"
-                                               "uniform float pointSize;\n"
-                                               "#endif\n"
-                                               "in vec3 vPos;\n"
-                                               "in vec4 vColor;\n"
-                                               "out vec4 color;\n"
-                                               "void main() {\n"
-                                               "    gl_Position = MVP * vec4(vPos, 1.0);\n"
-                                               "    #ifdef WEBGL\n"
-                                               "    gl_PointSize = pointSize;\n"
-                                               "    #endif\n"
-                                               "    color = vColor;\n"
-                                               "}\n",
-                                               "uniform sampler2D pointSprite;\n"
-                                               "uniform sampler2D pointSpriteHighlight;\n"
-                                               "in vec4 color;\n"
-                                               "out vec4 FragColor;\n"
-                                               "void main() {\n"
-                                               "    FragColor = color*texture(pointSprite, gl_PointCoord)+texture(pointSpriteHighlight, gl_PointCoord);\n"
-                                               "}\n","",false,true)},
-simpleTexProg{GLProgram::createFromString(
-                                          "uniform mat4 MVP;\n"
-                                          "in vec3 vPos;\n"
-                                          "in vec2 vTexCoords;\n"
-                                          "out vec4 color;\n"
-                                          "out vec2 texCoords;\n"
-                                          "void main() {\n"
-                                          "    gl_Position = MVP * vec4(vPos, 1.0);\n"
-                                          "    texCoords = vTexCoords;\n"
-                                          "}\n",
-                                          "uniform sampler2D raster;\n"
-                                          "in vec2 texCoords;\n"
-                                          "out vec4 FragColor;\n"
-                                          "void main() {\n"
-                                          "    FragColor = texture(raster, texCoords);\n"
-                                          "}\n","",false,true)},
-simpleLightProg{GLProgram::createFromString(
-                                            "uniform mat4 MVP;\n"
-                                            "uniform mat4 MV;\n"
-                                            "uniform mat4 MVit;\n"
-                                            "in vec3 vPos;\n"
-                                            "in vec4 vColor;\n"
-                                            "in vec3 vNormal;\n"
-                                            "out vec4 color;\n"
-                                            "out vec3 normal;\n"
-                                            "out vec3 pos;\n"
-                                            "void main() {\n"
-                                            "    gl_Position = MVP * vec4(vPos, 1.0);\n"
-                                            "    pos = (MV * vec4(vPos, 1.0)).xyz;\n"
-                                            "    color = vColor;\n"
-                                            "    normal = (MVit * vec4(vNormal, 0.0)).xyz;\n"
-                                            "}\n",
-                                            "in vec4 color;\n"
-                                            "in vec3 pos;\n"
-                                            "in vec3 normal;\n"
-                                            "out vec4 FragColor;\n"
-                                            "void main() {\n"
-                                            "    vec3 nnormal = normalize(normal);"
-                                            "    vec3 nlightDir = normalize(vec3(0.0,0.0,0.0)-pos);"
-                                            "    FragColor = color*abs(dot(nlightDir,nnormal));\n"
-                                            "}\n","",false,true)},
-simpleArray{},
-simpleVb{GL_ARRAY_BUFFER},
-raster{GL_LINEAR, GL_LINEAR,GL_CLAMP_TO_EDGE,GL_CLAMP_TO_EDGE},
-pointSprite{GL_LINEAR, GL_LINEAR,GL_CLAMP_TO_EDGE,GL_CLAMP_TO_EDGE},
-pointSpriteHighlight{GL_LINEAR, GL_LINEAR,GL_CLAMP_TO_EDGE,GL_CLAMP_TO_EDGE},
-resumeTime{0},
-animationActive{true}
+  p{},
+  mv{},
+  mvi{},
+  lightPos{},
+  simpleProg{GLProgram::createFromString(
+     "uniform mat4 MVP;\n"
+     "in vec3 vPos;\n"
+     "in vec4 vColor;\n"
+     "out vec4 color;\n"
+     "void main() {\n"
+     "    gl_Position = MVP * vec4(vPos, 1.0);\n"
+     "    color = vColor;\n"
+     "}\n",
+     "in vec4 color;\n"
+     "out vec4 FragColor;\n"
+     "void main() {\n"
+     "    FragColor = color;\n"
+     "}\n","",false,true)},
+  simplePointProg{GLProgram::createFromString(
+     "uniform mat4 MVP;\n"
+     "#ifdef WEBGL\n"
+     "uniform float pointSize;\n"
+     "#endif\n"
+     "in vec3 vPos;\n"
+     "in vec4 vColor;\n"
+     "out vec4 color;\n"
+     "void main() {\n"
+     "    gl_Position = MVP * vec4(vPos, 1.0);\n"
+     "    #ifdef WEBGL\n"
+     "    gl_PointSize = pointSize;\n"
+     "    #endif\n"
+     "    color = vColor;\n"
+     "}\n",
+     "in vec4 color;\n"
+     "out vec4 FragColor;\n"
+     "void main() {\n"
+     "    FragColor = color;\n"
+     "}\n","",false,true)},
+  simpleSpriteProg{GLProgram::createFromString(
+     "uniform mat4 MVP;\n"
+     "#ifdef WEBGL\n"
+     "uniform float pointSize;\n"
+     "#endif\n"
+     "in vec3 vPos;\n"
+     "in vec4 vColor;\n"
+     "out vec4 color;\n"
+     "void main() {\n"
+     "    gl_Position = MVP * vec4(vPos, 1.0);\n"
+     "    #ifdef WEBGL\n"
+     "    gl_PointSize = pointSize;\n"
+     "    #endif\n"
+     "    color = vColor;\n"
+     "}\n",
+     "uniform sampler2D pointSprite;\n"
+     "in vec4 color;\n"
+     "out vec4 FragColor;\n"
+     "void main() {\n"
+     "    FragColor = color*texture(pointSprite, gl_PointCoord);\n"
+     "}\n","",false,true)},
+  simpleHLSpriteProg{GLProgram::createFromString(
+     "uniform mat4 MVP;\n"
+     "#ifdef WEBGL\n"
+     "uniform float pointSize;\n"
+     "#endif\n"
+     "in vec3 vPos;\n"
+     "in vec4 vColor;\n"
+     "out vec4 color;\n"
+     "void main() {\n"
+     "    gl_Position = MVP * vec4(vPos, 1.0);\n"
+     "    #ifdef WEBGL\n"
+     "    gl_PointSize = pointSize;\n"
+     "    #endif\n"
+     "    color = vColor;\n"
+     "}\n",
+     "uniform sampler2D pointSprite;\n"
+     "uniform sampler2D pointSpriteHighlight;\n"
+     "in vec4 color;\n"
+     "out vec4 FragColor;\n"
+     "void main() {\n"
+     "    FragColor = color*texture(pointSprite, gl_PointCoord)+texture(pointSpriteHighlight, gl_PointCoord);\n"
+     "}\n","",false,true)},
+  simpleTexProg{GLProgram::createFromString(
+     "uniform mat4 MVP;\n"
+     "in vec3 vPos;\n"
+     "in vec2 vTexCoords;\n"
+     "out vec4 color;\n"
+     "out vec2 texCoords;\n"
+     "void main() {\n"
+     "    gl_Position = MVP * vec4(vPos, 1.0);\n"
+     "    texCoords = vTexCoords;\n"
+     "}\n",
+     "uniform sampler2D raster;\n"
+     "in vec2 texCoords;\n"
+     "out vec4 FragColor;\n"
+     "void main() {\n"
+     "    FragColor = texture(raster, texCoords);\n"
+     "}\n","",false,true)},
+  simpleLightProg{GLProgram::createFromString(
+     "uniform mat4 MVP;\n"
+     "uniform mat4 MV;\n"
+     "uniform mat4 MVit;\n"
+     "in vec3 vPos;\n"
+     "in vec4 vColor;\n"
+     "in vec3 vNormal;\n"
+     "out vec4 color;\n"
+     "out vec3 normal;\n"
+     "out vec3 pos;\n"
+     "void main() {\n"
+     "    gl_Position = MVP * vec4(vPos, 1.0);\n"
+     "    pos = (MV * vec4(vPos, 1.0)).xyz;\n"
+     "    color = vColor;\n"
+     "    normal = (MVit * vec4(vNormal, 0.0)).xyz;\n"
+     "}\n",
+     "in vec4 color;\n"
+     "in vec3 pos;\n"
+     "in vec3 normal;\n"
+     "uniform vec3 lightPos;\n"
+     "out vec4 FragColor;\n"
+     "void main() {\n"
+     "    vec3 nnormal = normalize(normal);"
+     "    vec3 nlightDir = normalize(lightPos-pos);"
+     "    float diffuse = max(dot(nlightDir,nnormal), 0.0);"
+     "    vec3 viewDir = normalize(-pos);"
+     "    vec3 reflectDir = reflect(-nlightDir, nnormal);"
+     "    float specular = pow(max(dot(reflectDir, viewDir), 0.0), 8.0);"
+     "    vec3 ambient = 0.2 * color.rgb;"
+     "    FragColor = vec4(ambient + diffuse * color.rgb + vec3(specular), color.a);\n"
+     "}\n","",false,true)},
+  simpleArray{},
+  simpleVb{GL_ARRAY_BUFFER},
+  raster{GL_LINEAR, GL_LINEAR,GL_CLAMP_TO_EDGE,GL_CLAMP_TO_EDGE},
+  pointSprite{GL_LINEAR, GL_LINEAR,GL_CLAMP_TO_EDGE,GL_CLAMP_TO_EDGE},
+  pointSpriteHighlight{GL_LINEAR, GL_LINEAR,GL_CLAMP_TO_EDGE,GL_CLAMP_TO_EDGE},
+  resumeTime{0},
+  animationActive{true}
 {
   setInteractionCallbacks();
   resetPointTexture();
-
+  
   // setup a minimal shader and buffer
   shaderUpdate();
 
@@ -210,7 +219,7 @@ void GLApp::setPointHighlightTexture(const Image& shape) {
   pointSpriteHighlight.setData(shape.data, shape.width, shape.height, shape.componentCount);
 }
 
-void GLApp::setPointTexture(const std::vector<uint8_t>& shape, uint32_t x,
+void GLApp::setPointTexture(const std::vector<uint8_t>& shape, uint32_t x, 
                             uint32_t y, uint8_t components) {
   pointSprite.setData(shape, x, y, components);
 }
@@ -221,7 +230,7 @@ void GLApp::resetPointTexture(uint32_t resolution) {
   for (size_t y = 0;y<resolution;++y) {
     for (size_t x = 0;x<resolution;++x) {
       const Vec2 normPos{2.0f*x/float(resolution)-1.0f, 2.0f*y/float(resolution)-1.0f};
-      const uint8_t dist = uint8_t(std::max<int16_t>(0, int16_t((1.0f-(center - normPos).length()) * 255)));
+      const uint8_t dist = uint8_t(std::max<int16_t>(0, int16_t((1.0f-(center - normPos).length()) * 255))); 
       disk[4*(x+y*resolution)+0] = 255;
       disk[4*(x+y*resolution)+1] = 255;
       disk[4*(x+y*resolution)+2] = 255;
@@ -339,13 +348,13 @@ void GLApp::run() {
   mainLoop();
 #endif
 }
-
+ 
 void GLApp::resize(const Dimensions winDim, const Dimensions fbDim) {
   GL(glViewport(0, 0, GLsizei(fbDim.width), GLsizei(fbDim.height)));
 }
 
 void GLApp::setCallbacks(std::function<void(double)> fpsCallback,
-                         std::function<void(const std::string&)> messageCallback) {
+                  std::function<void(const std::string&)> messageCallback) {
   glEnv.setFpsCallback(fpsCallback);
   this->messageCallback = messageCallback;
 }
@@ -362,23 +371,50 @@ void GLApp::triangulate(const Vec3& p0,
                         std::vector<float>& trisData) {
 
   const Dimensions dim{ glEnv.getFramebufferSize() };
-  const Vec3 scale{Vec3{2.0f/float(dim.width), 2.0f/float(dim.height), 1.0} * lineThickness};
+  const float halfLineThickness = lineThickness * 0.5f;
+  const float ndcPerPixelX = 2.0f / float(dim.width);
+  const float ndcPerPixelY = 2.0f / float(dim.height);
 
-  const Vec3 pDir = Vec3::normalize(p1-p0);
-  const Vec3 cDir = Vec3::normalize(p2-p1);
-  const Vec3 nDir = Vec3::normalize(p3-p2);
+  const auto toPixelDirection = [&](const Vec3& a, const Vec3& b) {
+    return Vec3{(b.x-a.x) / ndcPerPixelX,
+                (b.y-a.y) / ndcPerPixelY,
+                0.0f};
+  };
 
-  const Vec3 viewDir = Vec3::normalize((mvi * Vec4{0,0,1,0}).xyz);
+  const auto perpendicular = [](const Vec3& direction) {
+    const Vec3 normalizedDirection = Vec3::normalize(direction);
+    return Vec3{-normalizedDirection.y, normalizedDirection.x, 0.0f};
+  };
 
-  const Vec3 pPerp = Vec3::cross(pDir, viewDir);
-  const Vec3 cPerp = Vec3::cross(cDir, viewDir);
-  const Vec3 nPerp = Vec3::cross(nDir, viewDir);
+  const Vec3 cPerp = perpendicular(toPixelDirection(p1, p2));
+  Vec3 pPerp = perpendicular(toPixelDirection(p0, p1));
+  Vec3 nPerp = perpendicular(toPixelDirection(p2, p3));
 
-  Vec3 pSep = pPerp + cPerp;
-  Vec3 nSep = nPerp + cPerp;
+  if (pPerp.sqlength() == 0.0f) pPerp = cPerp;
+  if (nPerp.sqlength() == 0.0f) nPerp = cPerp;
 
-  pSep = (pSep / std::max(1.0f,Vec3::dot(pSep, cPerp))) * scale;
-  nSep = (nSep / std::max(1.0f,Vec3::dot(nSep, cPerp))) * scale;
+  const auto miterOffset = [&](const Vec3& aPerp, const Vec3& bPerp) {
+    Vec3 miter = Vec3::normalize(aPerp + bPerp);
+    if (miter.sqlength() == 0.0f) miter = bPerp;
+
+    const float denom = Vec3::dot(miter, bPerp);
+    if (denom < 0.2f) {
+      return bPerp * halfLineThickness;
+    }
+
+    const float miterLength = std::min(halfLineThickness / denom,
+                                       halfLineThickness * 4.0f);
+    return miter * miterLength;
+  };
+
+  const auto toNdcOffset = [&](const Vec3& pixelOffset) {
+    return Vec3{pixelOffset.x * ndcPerPixelX,
+                pixelOffset.y * ndcPerPixelY,
+                0.0f};
+  };
+
+  const Vec3 pSep = toNdcOffset(miterOffset(pPerp, cPerp));
+  const Vec3 nSep = toNdcOffset(miterOffset(nPerp, cPerp));
 
   trisData.push_back(p1[0]+pSep[0]); trisData.push_back(p1[1]+pSep[1]);trisData.push_back(p1[2]+pSep[2]);
   trisData.push_back(c1[0]);trisData.push_back(c1[1]); trisData.push_back(c1[2]); trisData.push_back(c1[3]);
@@ -402,17 +438,116 @@ void GLApp::triangulate(const Vec3& p0,
 
 void GLApp::drawLines(const std::vector<float>& data, LineDrawType t, float lineThickness) {
   shaderUpdate();
-
+  
   simpleProg.enable();
   simpleArray.bind();
 
   if (lineThickness > 1.0f) {
     std::vector<float> trisData;
+    const Mat4 mvp = p * mv;
 
+    struct ClippedLine {
+      Vec4 a;
+      Vec4 b;
+      float aT;
+      float bT;
+    };
+
+    const auto toClip = [&](const Vec3& point) {
+      return mvp * Vec4{point, 1.0f};
+    };
+
+    const auto clipDistance = [](const Vec4& point, const uint8_t plane) {
+      switch (plane) {
+        case 0: return point.x + point.w;
+        case 1: return -point.x + point.w;
+        case 2: return point.y + point.w;
+        case 3: return -point.y + point.w;
+        case 4: return point.z + point.w;
+        default: return -point.z + point.w;
+      }
+    };
+
+    const auto lerpClip = [](const Vec4& a, const Vec4& b, const float t) {
+      return a + (b-a) * t;
+    };
+
+    const auto lerpColor = [](const Vec4& a, const Vec4& b, const float t) {
+      return a + (b-a) * t;
+    };
+
+    const auto clipLine = [&](const Vec4& a, const Vec4& b) -> std::optional<ClippedLine> {
+      float aT = 0.0f;
+      float bT = 1.0f;
+
+      for (uint8_t plane = 0; plane < 6; ++plane) {
+        const float aDist = clipDistance(a, plane);
+        const float bDist = clipDistance(b, plane);
+
+        if (aDist < 0.0f && bDist < 0.0f) {
+          return {};
+        }
+
+        if (aDist >= 0.0f && bDist >= 0.0f) {
+          continue;
+        }
+
+        const float t = aDist / (aDist-bDist);
+        if (aDist < 0.0f) {
+          aT = std::max(aT, t);
+        } else {
+          bT = std::min(bT, t);
+        }
+
+        if (aT > bT) {
+          return {};
+        }
+      }
+
+      return ClippedLine{lerpClip(a, b, aT), lerpClip(a, b, bT), aT, bT};
+    };
+
+    const auto toNdc = [](const Vec4& clip) {
+      const float invW = 1.0f / clip.w;
+      return Vec3{clip.x * invW, clip.y * invW, clip.z * invW};
+    };
+
+    const auto previousSupportNdc = [&](const Vec4& p0Clip, const Vec4& p1Clip) {
+      const std::optional<ClippedLine> clipped = clipLine(p0Clip, p1Clip);
+      return clipped ? toNdc(clipped->a) : toNdc(p1Clip);
+    };
+
+    const auto nextSupportNdc = [&](const Vec4& p2Clip, const Vec4& p3Clip) {
+      const std::optional<ClippedLine> clipped = clipLine(p2Clip, p3Clip);
+      return clipped ? toNdc(clipped->b) : toNdc(p2Clip);
+    };
+
+    const auto addSegment = [&](const Vec3& p0,
+                                const Vec3& p1, const Vec4& c1,
+                                const Vec3& p2, const Vec4& c2,
+                                const Vec3& p3) {
+      const Vec4 p0Clip = toClip(p0);
+      const Vec4 p1Clip = toClip(p1);
+      const Vec4 p2Clip = toClip(p2);
+      const Vec4 p3Clip = toClip(p3);
+      const std::optional<ClippedLine> clipped = clipLine(p1Clip, p2Clip);
+      if (!clipped) return;
+
+      const Vec3 p1Ndc = toNdc(clipped->a);
+      const Vec3 p2Ndc = toNdc(clipped->b);
+      const Vec3 p0Ndc = clipped->aT > 0.0f ? p1Ndc : previousSupportNdc(p0Clip, p1Clip);
+      const Vec3 p3Ndc = clipped->bT < 1.0f ? p2Ndc : nextSupportNdc(p2Clip, p3Clip);
+      const Vec4 c1Clipped = lerpColor(c1, c2, clipped->aT);
+      const Vec4 c2Clipped = lerpColor(c1, c2, clipped->bT);
+
+      triangulate(p0Ndc, p1Ndc, c1Clipped, p2Ndc, c2Clipped, p3Ndc,
+                  lineThickness, trisData);
+    };
+    
     switch (t) {
       case LineDrawType::LIST :
         for (size_t i = 0;i<data.size()/7;i+=2) {
-
+                    
           const size_t i1 = i;
           const size_t i2 = i+1;
 
@@ -423,7 +558,7 @@ void GLApp::drawLines(const std::vector<float>& data, LineDrawType t, float line
 
           Vec3 p0{p1};
           Vec3 p3{p2};
-
+          
           if (i1 >= 2 && p1[0] == data[(i1-1)*7+0] && p1[1] == data[(i1-1)*7+1] && p1[2] == data[(i1-1)*7+2]) {
             const size_t i0 = i-2;
             p0 = Vec3{data[i0*7+0],data[i0*7+1],data[i0*7+2]};
@@ -434,17 +569,17 @@ void GLApp::drawLines(const std::vector<float>& data, LineDrawType t, float line
             p3 = Vec3{data[i3*7+0],data[i3*7+1],data[i3*7+2]};
           }
 
-          triangulate(p0, p1, c1, p2, c2, p3, lineThickness, trisData);
+          addSegment(p0, p1, c1, p2, c2, p3);
         }
         break;
       case LineDrawType::STRIP :
         for (size_t i = 0;i<(data.size()/7)-1;++i) {
-
+          
           const size_t i0 = (i==0) ? 0 : i-1;
           const size_t i1 = i;
           const size_t i2 = i+1;
           const size_t i3 = (i==(data.size()/7)-2) ? i2 : i2+1;
-
+          
           const Vec3 p0{data[i0*7+0],data[i0*7+1],data[i0*7+2]};
           const Vec3 p1{data[i1*7+0],data[i1*7+1],data[i1*7+2]};
           const Vec4 c1{data[i1*7+3],data[i1*7+4],data[i1*7+5],data[i1*7+6]};
@@ -452,7 +587,7 @@ void GLApp::drawLines(const std::vector<float>& data, LineDrawType t, float line
           const Vec4 c2{data[i2*7+3],data[i2*7+4],data[i2*7+5],data[i2*7+6]};
           const Vec3 p3{data[i3*7+0],data[i3*7+1],data[i3*7+2]};
 
-          triangulate(p0, p1, c1, p2, c2, p3, lineThickness, trisData);
+          addSegment(p0, p1, c1, p2, c2, p3);
         }
         break;
       case LineDrawType::LOOP :
@@ -470,18 +605,20 @@ void GLApp::drawLines(const std::vector<float>& data, LineDrawType t, float line
           const Vec4 c2{data[i2*7+3],data[i2*7+4],data[i2*7+5],data[i2*7+6]};
           const Vec3 p3{data[i3*7+0],data[i3*7+1],data[i3*7+2]};
 
-          triangulate(p0, p1, c1, p2, c2, p3, lineThickness, trisData);
+          addSegment(p0, p1, c1, p2, c2, p3);
         }
         break;
     }
 #ifndef __EMSCRIPTEN__
     GL(glPolygonMode( GL_FRONT_AND_BACK, GL_FILL ));
 #endif
+    simpleProg.setUniform("MVP", Mat4{});
     simpleVb.setData(trisData,7,GL_DYNAMIC_DRAW);
     simpleArray.connectVertexAttrib(simpleVb, simpleProg, "vPos", 3);
     simpleArray.connectVertexAttrib(simpleVb, simpleProg, "vColor", 4, 3);
 
     GL(glDrawArrays(GL_TRIANGLES, 0, GLsizei(trisData.size()/7)));
+    simpleProg.setUniform("MVP", p*mv);
   } else {
     simpleVb.setData(data,7,GL_DYNAMIC_DRAW);
     simpleArray.connectVertexAttrib(simpleVb, simpleProg, "vPos", 3);
@@ -502,7 +639,7 @@ void GLApp::drawLines(const std::vector<float>& data, LineDrawType t, float line
 
 void GLApp::drawPoints(const std::vector<float>& data, float pointSize, bool useTex) {
   shaderUpdate();
-
+  
   if (useTex) {
     if (pointSpriteHighlight.getHeight() > 0) {
       simpleHLSpriteProg.enable();
@@ -530,7 +667,7 @@ void GLApp::drawPoints(const std::vector<float>& data, float pointSize, bool use
       simpleArray.connectVertexAttrib(simpleVb, simpleSpriteProg, "vPos", 3);
       simpleArray.connectVertexAttrib(simpleVb, simpleSpriteProg, "vColor", 4, 3);
     }
-
+    
   } else {
     simplePointProg.enable();
 #ifdef __EMSCRIPTEN__
@@ -613,8 +750,8 @@ static std::vector<float> convertTriangleFanToLines(
 }
 
 static std::vector<float> convertTriangleStripToLines(
-                                                      const std::vector<float>& stripVertices,
-                                                      std::size_t compCount // floats per vertex
+                                               const std::vector<float>& stripVertices,
+                                               std::size_t compCount // floats per vertex
 ) {
   std::vector<float> lineVertices;
 
@@ -655,8 +792,8 @@ static std::vector<float> convertTriangleStripToLines(
 }
 
 static std::vector<float> convertTrianglesToLines(
-                                                  const std::vector<float>& triangleVertices,
-                                                  std::size_t compCount // number of floats per vertex
+                                           const std::vector<float>& triangleVertices,
+                                           std::size_t compCount // number of floats per vertex
 ) {
   std::vector<float> lineVertices;
 
@@ -737,6 +874,14 @@ void GLApp::setDrawTransform(const Mat4& mat) {
   mvi = Mat4::inverse(mv);
 }
 
+void GLApp::setLightPos(const Vec3& lightPos) {
+  this->lightPos = lightPos;
+}
+
+Vec3 GLApp::getLightPos() const {
+  return lightPos;
+}
+
 void GLApp::shaderUpdate() {
   simpleProg.enable();
   simpleProg.setUniform("MVP", p*mv);
@@ -757,6 +902,7 @@ void GLApp::shaderUpdate() {
   simpleLightProg.setUniform("MVP", p*mv);
   simpleLightProg.setUniform("MV", mv);
   simpleLightProg.setUniform("MVit", mvi, true);
+  simpleLightProg.setUniform("lightPos", lightPos);
 }
 
 void GLApp::setImageFilter(GLint magFilter, GLint minFilter) {
@@ -772,11 +918,11 @@ void GLApp::drawImage(const GLTexture2D& image, const Vec2& bl, const Vec2& tr) 
 }
 
 void GLApp::drawImage(const Image& image, const Vec2& bl, const Vec2& tr) {
-  drawImage(image,
-            {bl.x,bl.y,0.0f},
-            {tr.x,bl.y,0.0f},
-            {bl.x,tr.y,0.0f},
-            {tr.x,tr.y,0.0f});
+    drawImage(image,
+              {bl.x,bl.y,0.0f},
+              {tr.x,bl.y,0.0f},
+              {bl.x,tr.y,0.0f},
+              {tr.x,tr.y,0.0f});
 }
 
 
@@ -785,9 +931,9 @@ void GLApp::drawImage(const GLTexture2D& image, const Vec3& bl,
                       const Vec3& tr) {
 
   shaderUpdate();
-
+  
   simpleTexProg.enable();
-
+  
   std::vector<float> data = {
     tr[0], tr[1], tr[2], 1.0f, 1.0f,
     tl[0], tl[1], tl[2], 0.0f, 1.0f,
@@ -797,9 +943,9 @@ void GLApp::drawImage(const GLTexture2D& image, const Vec3& bl,
     bl[0], bl[1], bl[2], 0.0f, 0.0f,
     br[0], br[1], br[2], 1.0f, 0.0f,
   };
-
+  
   simpleVb.setData(data,5,GL_DYNAMIC_DRAW);
-
+  
   simpleArray.bind();
   simpleArray.connectVertexAttrib(simpleVb, simpleTexProg, "vPos", 3);
   simpleArray.connectVertexAttrib(simpleVb, simpleTexProg, "vTexCoords", 2, 3);
@@ -818,10 +964,10 @@ void GLApp::drawImage(const Image& image, const Vec3& bl,
 
 void GLApp::drawRect(const Vec4& color, const Vec2& bl, const Vec2& tr) {
   drawRect(color,
-           {bl.x,bl.y,0.0f},
-           {tr.x,bl.y,0.0f},
-           {bl.x,tr.y,0.0f},
-           {tr.x,tr.y,0.0f});
+            {bl.x,bl.y,0.0f},
+            {tr.x,bl.y,0.0f},
+            {bl.x,tr.y,0.0f},
+            {tr.x,tr.y,0.0f});
 }
 
 void GLApp::drawRect(const Vec4& color, const Vec3& bl, const Vec3& br,
@@ -912,8 +1058,8 @@ void GLApp::initScript(const std::vector<std::string>& args) {
                                   static uint32_t imageCounter = 0;
                                   std::stringstream ss;
                                   ss << "screenshot-" << std::setw(6)
-                                  << std::setfill('0') << imageCounter++
-                                  << ".png";
+                                    << std::setfill('0') << imageCounter++
+                                    << ".png";
                                   std::filesystem::path filePath = base / ss.str();
 
                                   return GLScreenshot::save(filePath.string())
@@ -944,11 +1090,11 @@ void GLApp::initScript(const std::vector<std::string>& args) {
 
     interpreter.registerCommand(
                                 "setfpswindow",
-                                [this](int window) -> CommandResultCode {
-                                  if (window < 1) {
+                                [this](float seconds) -> CommandResultCode {
+                                  if (seconds <= 0) {
                                     return CommandResultCode::invalidArguments;
                                   }
-                                  glEnv.setFPSAccumulationInterval(static_cast<uint64_t>(window));
+                                  glEnv.setFPSAccumulationInterval(static_cast<double>(seconds));
                                   return CommandResultCode::success;
                                 }
                                 );
@@ -996,6 +1142,13 @@ void GLApp::initScript(const std::vector<std::string>& args) {
     interpreter.registerCommand(
                                 "logfps",
                                 [this]() -> CommandResultCode {
+                                  static bool starNewMeasurment = true;
+
+                                  if (starNewMeasurment) {
+                                    glEnv
+                                      .setFPSAccumulationInterval(glEnv.getFPSAccumulationInterval());
+                                  }
+
                                   if (!glEnv.getFPSCounterStatus()) {
                                     if (writeScriptLog("fpsCounter disabled")) {
                                       return CommandResultCode::success;
@@ -1004,12 +1157,14 @@ void GLApp::initScript(const std::vector<std::string>& args) {
                                   }
 
                                   if (glEnv.getFps() == 0) {
+                                    starNewMeasurment = false;
                                     return CommandResultCode::waitingNoop;
                                   }
 
                                   std::stringstream s;
                                   s << static_cast<int>(std::ceil(glEnv.getFps())) << " fps";
                                   if (writeScriptLog(s.str())) {
+                                    starNewMeasurment = true;
                                     return CommandResultCode::success;
                                   }
                                   return CommandResultCode::callbackError;
@@ -1062,10 +1217,10 @@ void GLApp::initScript(const std::vector<std::string>& args) {
                                 );
     interpreter.setUnknownCommandHandler(
                                          [](const std::string &command,
-                                            const std::vector<std::string> &args) {
-                                              std::cerr << "unknown command: " << command << "\n";
-                                              return CommandResultCode::unknownCommand;
-                                            });
+                                                const std::vector<std::string> &args) {
+                                                  std::cerr << "unknown command: " << command << "\n";
+                                                  return CommandResultCode::unknownCommand;
+                                                });
   } else {
     scriptRunning = false;
   }

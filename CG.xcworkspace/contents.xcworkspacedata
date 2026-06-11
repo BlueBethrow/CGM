@@ -5,16 +5,31 @@
       location = "group:00_Color/00 Color.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:01_Raytracing/01 Raytracer.xcodeproj">
+      location = "group:01_Raytracing/01 Raytracing.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:02_Texturing/02 Texturing.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:03_HelloGL/03 HelloGL.xcodeproj">
+      location = "group:03_Pathtracing/03 Pathtracing.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:04_Triforce/04 Triforce.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:05_Volumes/05 Volren.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:06_VolumeShadows/06 VolumeShadows.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:07_VolumeGeneration/07 VolumeGeneration.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:08_Radiosity/08 Radiosity.xcodeproj">
+   </FileRef>   
+   <FileRef
+      location = "group:09_PhotonMapping/09 PhotonMapping.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:Utils/Utils.xcodeproj">

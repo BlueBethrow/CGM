@@ -1,5 +1,7 @@
 #pragma once
 
+#include "GLEnv.h"
+
 #include <iostream>
 #include <exception>
 
@@ -13,20 +15,13 @@ private:
   std::string whatStr;
 };
 
-struct Dimensions {
-  uint32_t width;
-  uint32_t height;
-  
-  float aspect() const {return float(width)/float(height);}
-};
-
 
 std::string errorString(GLenum glerr);
 
 #ifndef NDEBUG
 
 // under some circumstances the glError loops below do not
-// terminate, either glError itself causes an erro or does
+// terminate, either glError itself causes an error or does
 // not reset the error state. Neither should happen, but
 // still do
 #define MAX_GL_ERROR_COUNT 10

@@ -32,7 +32,7 @@ bool Material::reflects() const
 
 bool Material::refracts() const
 {
-    return reflects() && (IOR.has_value());
+    return reflects() && IOR;
 }
 
 std::optional<float> Material::getIndexOfRefraction() const
@@ -43,4 +43,10 @@ std::optional<float> Material::getIndexOfRefraction() const
 float Material::getLocalRefectivity() const
 {
     return local;
+}
+
+float Material::getReflectivity(float cosI) const
+{
+  // TODO: add reflectivity computation
+  return 0;
 }

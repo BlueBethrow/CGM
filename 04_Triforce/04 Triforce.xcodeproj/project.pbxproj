@@ -144,7 +144,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -210,14 +210,14 @@
 				HEADER_SEARCH_PATHS = (
 					../Network,
 					../Utils,
-					/usr/local/Cellar/glew/2.1.0_1/include,
-					/usr/local/Cellar/glfw/3.3.2/include,
+					/opt/homebrew/include,
+					/usr/local/include/,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					../Network,
 					../Utils,
-					/usr/local/Cellar/glfw/3.3.2/lib/,
-					/usr/local/Cellar/glew/2.1.0_1/lib/,
+					/opt/homebrew/lib,
+					/usr/local/lib/,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 11.1;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -243,7 +243,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -303,14 +303,14 @@
 				HEADER_SEARCH_PATHS = (
 					../Network,
 					../Utils,
-					/usr/local/Cellar/glew/2.1.0_1/include,
-					/usr/local/Cellar/glfw/3.3.2/include,
+					/opt/homebrew/include,
+					/usr/local/include/,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					../Network,
 					../Utils,
-					/usr/local/Cellar/glfw/3.3.2/lib/,
-					/usr/local/Cellar/glew/2.1.0_1/lib/,
+					/opt/homebrew/lib,
+					/usr/local/lib/,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 11.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -333,6 +333,7 @@
 		A231F10725EAF61A00CBFC23 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				DEAD_CODE_STRIPPING = YES;
@@ -343,7 +344,6 @@
 					/opt/homebrew/include,
 				);
 				LIBRARY_SEARCH_PATHS = (
-					/usr/local/lib,
 					/opt/homebrew/lib,
 				);
 				OTHER_LDFLAGS = (
@@ -361,6 +361,7 @@
 		A231F10825EAF61A00CBFC23 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				DEAD_CODE_STRIPPING = YES;
@@ -371,7 +372,6 @@
 					/opt/homebrew/include,
 				);
 				LIBRARY_SEARCH_PATHS = (
-					/usr/local/lib,
 					/opt/homebrew/lib,
 				);
 				OTHER_LDFLAGS = (
